@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"power-mode-tray/libs"
+	"power-mode-tray/settings"
 	"syscall"
 
 	"github.com/getlantern/systray"
@@ -29,6 +30,10 @@ func onReady() {
 
 	systray.AddSeparator()
 
+	menuAutoStart := systray.AddMenuItemCheckbox("Windows 시작 시 자동 실행", "PowerModeTray가 자동으로 시작됩니다.", settings.AutoStartEnabled())
+
+	systray.AddSeparator()
+
 	menuClose := systray.AddMenuItem("끝내기", "트레이를 종료합니다.")
 
 	menuOptions := map[syscall.GUID]systray.MenuItem{
@@ -46,6 +51,14 @@ func onReady() {
 				libs.PowerSetActiveOverlayScheme(&libs.PowerModeBetterPerformance)
 			case <-menuBetterBattery.ClickedCh:
 				libs.PowerSetActiveOverlayScheme(&libs.PowerModeBetterBattery)
+			case <-menuAutoStart.ClickedCh:
+				if settings.AutoStartEnabled() {
+					menuAutoStart.Uncheck()
+					settings.AutoStartDisable()
+				} else {
+					menuAutoStart.Check()
+					settings.AutoStartEnable()
+				}
 			case <-menuClose.ClickedCh:
 				systray.Quit()
 			}
